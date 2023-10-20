@@ -22,9 +22,9 @@ func main() {
 
 	uriStr := flag.Arg(0)
 	if uriStr == "" {
-		uriStr = "stun:stun.l.google.com:19302"
+		//uriStr = "stun:stun.l.google.com:19302"
+		uriStr = "stun:114.215.190.173:3478"
 	}
-
 	uri, err := stun.ParseURI(uriStr)
 	if err != nil {
 		log.Fatalf("Invalid URI '%s': %s", uriStr, err)

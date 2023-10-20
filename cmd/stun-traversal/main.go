@@ -17,19 +17,21 @@ import (
 	"github.com/pion/stun/v2"
 )
 
-var server = flag.String("server", "stun:stun.voipgate.com:3478", "Stun server address") //nolint:gochecknoglobals
+var server = flag.String("server", "stun.voipgate.com:3478", "Stun server address") //nolint:gochecknoglobals
 
 const (
 	udp           = "udp4"
 	pingMsg       = "ping"
 	pongMsg       = "pong"
-	timeoutMillis = 500
+	timeoutMillis = 5000
 )
 
 func main() { //nolint:gocognit
 	flag.Parse()
 
 	srvAddr, err := net.ResolveUDPAddr(udp, *server)
+	//srvAddr, err := net.ResolveUDPAddr(udp, "stun.voipgate.com:3478")
+	//srvAddr, err := net.ResolveUDPAddr(udp, "114.215.190.173:3478")
 	if err != nil {
 		log.Fatalf("Failed to resolve server addr: %s", err)
 	}
@@ -63,11 +65,13 @@ func main() { //nolint:gocognit
 		select {
 		case message, ok := <-messageChan:
 			if !ok {
+				log.Println("err")
 				return
 			}
 
 			switch {
 			case string(message) == pingMsg:
+				log.Println("receive pingmsg")
 				keepaliveMsg = pongMsg
 
 			case string(message) == pongMsg:
@@ -97,6 +101,7 @@ func main() { //nolint:gocognit
 
 				if publicAddr.String() != xorAddr.String() {
 					log.Printf("My public address: %s\n", xorAddr)
+
 					publicAddr = xorAddr
 
 					peerAddrChan = getPeerAddr()
@@ -111,6 +116,7 @@ func main() { //nolint:gocognit
 			if err != nil {
 				log.Panicln("resolve peeraddr:", err)
 			}
+			log.Printf("peerAddr is %v\n", peerAddr)
 
 		case <-keepalive:
 			// Keep NAT binding alive using STUN server or the peer once it's known
@@ -118,6 +124,7 @@ func main() { //nolint:gocognit
 				err = sendBindingRequest(conn, srvAddr)
 			} else {
 				err = sendStr(keepaliveMsg, conn, peerAddr)
+				log.Printf("sent to peerAddr %v\n", peerAddr)
 				if keepaliveMsg == pongMsg {
 					sentPong = true
 				}
@@ -158,6 +165,7 @@ func listen(conn *net.UDPConn) <-chan []byte {
 			buf := make([]byte, 1024)
 
 			n, _, err := conn.ReadFromUDP(buf)
+			//log.Printf("read %v bytes %v", n, string(buf[:n]))
 			if err != nil {
 				close(messages)
 				return

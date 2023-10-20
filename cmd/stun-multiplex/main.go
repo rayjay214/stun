@@ -82,12 +82,12 @@ func multiplex(conn *net.UDPConn, stunAddr net.Addr, stunConn io.Reader) {
 	}
 }
 
-var stunServer = flag.String("stun", "stun.l.google.com:19302", "STUN Server to use") //nolint:gochecknoglobals
+// var stunServer = flag.String("stun", "stun.l.google.com:19302", "STUN Server to use") //nolint:gochecknoglobals
+var stunServer = flag.String("stun", "stun.voipgate.com:3478", "STUN Server to use") //nolint:gochecknoglobals
 
 func main() {
-	isServer := flag.Arg(0) == ""
-
 	flag.Parse()
+	isServer := flag.Arg(0) == ""
 
 	// Allocating local UDP socket that will be used both for STUN and
 	// our application data.
